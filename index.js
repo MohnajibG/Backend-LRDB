@@ -1,11 +1,14 @@
 const express = require("express");
 const mongoose = require("mongoose");
 const cors = require("cors");
+
 require("dotenv").config();
-app.use(cors());
+
+mongoose.connect(process.env.MONGODB_URI);
 
 const userRoutes = require("./routes/user");
 const orderRoutes = require("./routes/order");
+const app = express();
 
 const corsOptions = {
   origin: "https://lrdb.netlify.app", // Frontend autorisé
@@ -13,13 +16,12 @@ const corsOptions = {
   allowedHeaders: "Content-Type,Authorization", // En-têtes autorisés
 };
 
-const app = express();
 app.use(express.json(corsOptions));
-mongoose.connect(process.env.MONGODB_URI);
+app.use(cors());
+app.options("*", cors(corsOptions));
 
 app.use(orderRoutes);
 app.use(userRoutes);
-app.options("*", cors(corsOptions));
 
 app.all("*", (req, res) => {
   res.status(404).json({ message: "Not Found" });
