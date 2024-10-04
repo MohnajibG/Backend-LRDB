@@ -18,6 +18,6 @@ app.all("*", (req, res) => {
   res.status(404).json({ message: "Not Found" });
 });
 
-app.listen(process.env.PORT, () => {
+app.listen(3000, () => {
   console.log("SERVER STARTED 🍟🍔🥤");
 });

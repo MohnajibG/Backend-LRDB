@@ -71,7 +71,7 @@ router.get("/order/:id", async (req, res) => {
 router.put("/order/:id", isAuthenticated, async (req, res) => {
   try {
     const statusOrder = await Order.findByIdAndUpdate(
-      req.params._id,
+      req.params.id,
       { etat: true },
       { new: true }
     );
@@ -85,7 +85,7 @@ router.put("/order/:id", isAuthenticated, async (req, res) => {
 
 router.delete("/order/:id", isAuthenticated, async (req, res) => {
   try {
-    const deleteOrder = await Order.findByIdAndDelete(req.params._id);
+    const deleteOrder = await Order.findByIdAndDelete(req.params.id);
 
     res
       .status(200)
