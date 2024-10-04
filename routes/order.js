@@ -32,7 +32,7 @@ router.post("/order", async (req, res) => {
     res.status(201).json({
       message: "Commande enregistrée 🫡",
       orderNumber: newOrder.orderNumber,
-      id: newOrder._id,
+      id: newOrder.id,
     });
   } catch (error) {
     res.status(500).json({ message: error.message });
