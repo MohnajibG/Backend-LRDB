@@ -7,8 +7,14 @@ app.use(cors());
 const userRoutes = require("./routes/user");
 const orderRoutes = require("./routes/order");
 
+const corsOptions = {
+  origin: "https://lrdb.netlify.app", // Frontend autorisé
+  methods: "GET,POST,PUT,DELETE", // Méthodes autorisées
+  allowedHeaders: "Content-Type,Authorization", // En-têtes autorisés
+};
+
 const app = express();
-app.use(express.json());
+app.use(express.json(corsOptions));
 mongoose.connect(process.env.MONGODB_URI);
 
 app.use(orderRoutes);
