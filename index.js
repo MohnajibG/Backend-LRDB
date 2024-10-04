@@ -9,10 +9,7 @@ const orderRoutes = require("./routes/order");
 const app = express();
 app.use(cors());
 app.use(express.json());
-// mongoose.connect(process.env.MONGODB_URI);
-mongoose.connect(
-  "mongodb+srv://MohNajibG:0pz6JhbVy0kOedp0@cluster0.r39lk.mongodb.net/"
-);
+mongoose.connect(process.env.MONGODB_URI);
 
 app.use(orderRoutes);
 app.use(userRoutes);
