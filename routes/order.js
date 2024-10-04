@@ -59,15 +59,6 @@ router.get("/orders", isAuthenticated, async (req, res) => {
   }
 });
 
-router.get("/order/:id", async (req, res) => {
-  try {
-    const order = await Order.findById(req.params.id);
-
-    res.status(200).json(order);
-  } catch (error) {
-    res.status(500).json({ message: error.message });
-  }
-});
 router.put("/order/:id", isAuthenticated, async (req, res) => {
   try {
     const statusOrder = await Order.findByIdAndUpdate(
