@@ -19,5 +19,5 @@ app.all("*", (req, res) => {
 });
 
 app.listen(process.env.PORT, () => {
-  console.log(`SERVER STARTED on port ${PORT} 🍟🍔🥤`);
+  console.log(`SERVER STARTED 🍟🍔🥤`);
 });
