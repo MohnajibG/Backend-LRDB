@@ -19,6 +19,7 @@ mongoose.connect(process.env.MONGODB_URI);
 
 app.use(orderRoutes);
 app.use(userRoutes);
+app.options("*", cors(corsOptions));
 
 app.all("*", (req, res) => {
   res.status(404).json({ message: "Not Found" });
