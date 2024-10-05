@@ -1,6 +1,5 @@
 const mongoose = require("mongoose");
 
-// Définir le schéma User
 const UserSchema = new mongoose.Schema({
   email: {
     unique: true,
@@ -14,5 +13,4 @@ const UserSchema = new mongoose.Schema({
   salt: String,
 });
 
-// Exporter le modèle User
 module.exports = mongoose.model("User", UserSchema);

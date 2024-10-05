@@ -50,7 +50,6 @@ router.get("/order/:id", async (req, res) => {
   }
 });
 
-// Route pour obtenir toutes les commandes (admin uniquement)
 router.get("/orders", isAuthenticated, isAdmin, async (req, res) => {
   try {
     const orders = await Order.find();
@@ -59,6 +58,8 @@ router.get("/orders", isAuthenticated, isAdmin, async (req, res) => {
     res.status(500).json({ message: error.message });
   }
 });
+
+module.exports = router;
 
 // Route pour mettre à jour le statut d'une commande (admin uniquement)
 router.put("/order/:id", isAuthenticated, isAdmin, async (req, res) => {
