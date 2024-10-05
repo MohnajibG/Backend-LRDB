@@ -4,21 +4,15 @@ const cors = require("cors");
 
 require("dotenv").config();
 
-mongoose.connect(process.env.MONGODB_URI);
+mongoose.connect(process.env.MONGO_URI);
 
 const userRoutes = require("./routes/user");
 const orderRoutes = require("./routes/order");
 const app = express();
 
-const corsOptions = {
-  origin: "https://lrdb.netlify.app", // Frontend autorisé
-  methods: "GET,POST,PUT,DELETE", // Méthodes autorisées
-  allowedHeaders: "Content-Type,Authorization", // En-têtes autorisés
-};
-
-app.use(express.json(corsOptions));
+app.use(express.json());
 app.use(cors());
-app.options("*", cors(corsOptions));
+app.options("*", cors());
 
 app.use(orderRoutes);
 app.use(userRoutes);
