@@ -1,5 +1,7 @@
 const express = require("express");
 const User = require("../models/User");
+const SHA256 = require("crypto-js/sha256");
+const encBase64 = require("crypto-js/enc-base64");
 const uid2 = require("uid2");
 
 const router = express.Router();
@@ -7,80 +9,80 @@ const router = express.Router();
 // Route de signup
 router.post("/user/signup", async (req, res) => {
   try {
-    const { username, code } = req.body;
+    const { username, email, password } = req.body;
 
     // Vérification des paramètres
-    if (!username || !code) {
-      return res.status(400).json({ message: "Paramètres manquants" });
+    if (!username || !email || !password) {
+      return res.status(400).json({ message: "Missing parameters" });
     }
 
-    // Vérification si le code existe déjà
-    const userCode = await User.findOne({ code });
-    if (userCode) {
-      return res.status(409).json({ message: "Ce compte est déjà activé" });
+    // Vérification si l'email existe déjà
+    const userEmail = await User.findOne({ email });
+    if (userEmail) {
+      return res.status(409).json({ message: "Email already in database" });
     }
 
-    // Vérification que le code est un nombre de 6 chiffres
-    if (code.length !== 6 || isNaN(code)) {
+    // Vérification de la longueur du mot de passe
+    if (password.length < 8) {
       return res
         .status(400)
-        .json({ message: "Votre code doit être un nombre de 6 chiffres" });
+        .json({ message: "Password must be at least 8 characters long" });
     }
 
-    // Génération d'un token
+    // Génération du salt et du hash
+    const salt = uid2(16);
+    const hash = SHA256(password + salt).toString(encBase64);
+
+    // Génération du token
     const token = uid2(16);
 
-    // Création d'un nouvel utilisateur
+    // Création du nouvel utilisateur
     const newUser = new User({
       username,
-      code,
+      email,
       token,
+      hash,
+      salt,
     });
-
-    console.log(newUser);
 
     // Sauvegarde de l'utilisateur
     await newUser.save();
 
     // Réponse avec les informations de l'utilisateur
-    return res.status(201).json({
-      message: "Utilisateur créé avec succès",
-      username: newUser.username,
-      token: newUser.token,
-    });
+    return res.status(201).json(newUser);
   } catch (error) {
     console.log(error);
-    res.status(500).json({ message: error.message });
+    return res.status(500).json({ message: error.message });
   }
 });
 
-// ROUTE DE LOGIN
+// Route de login
 router.post("/user/login", async (req, res) => {
   try {
-    const { username, code } = req.body;
+    const { email, password } = req.body;
 
     // Vérification des paramètres
-    if (!username || !code) {
-      return res.status(400).json({ message: "Paramètres manquants" });
+    if (!email || !password) {
+      return res.status(400).json({ message: "Missing parameters" });
     }
 
-    // Recherche de l'utilisateur par username et code
-    const user = await User.findOne({ username, code });
+    // Recherche de l'utilisateur par email
+    const user = await User.findOne({ email });
     if (!user) {
-      return res
-        .status(401)
-        .json({ message: "Utilisateur non trouvé ou code incorrect" });
+      return res.status(401).json({ message: "Unauthorized" });
+    }
+
+    // Validation du mot de passe
+    const hash = SHA256(password + user.salt).toString(encBase64);
+    if (hash !== user.hash) {
+      return res.status(401).json({ message: "Unauthorized" });
     }
 
     // Réponse avec le token et le nom d'utilisateur
-    return res.status(200).json({
-      message: "Connexion réussie",
-      token: user.token,
-      username: user.username,
-    });
+    return res.status(200).json({ token: user.token, username: user.username });
   } catch (error) {
     console.log(error);
-    res.status(500).json({ message: error.message });
+    return res.status(500).json({ message: error.message });
   }
 });
 

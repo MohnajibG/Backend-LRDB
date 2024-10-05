@@ -49,8 +49,8 @@ router.get("/order/:id", async (req, res) => {
   }
 });
 
-// Route pour récupérer toutes les commandes
-router.get("/orders", isAuthenticated, async (req, res) => {
+// Route pour obtenir toutes les commandes (admin uniquement)
+router.get("/orders", isAuthenticated, isAdmin, async (req, res) => {
   try {
     const orders = await Order.find();
     res.status(200).json(orders);
@@ -59,7 +59,8 @@ router.get("/orders", isAuthenticated, async (req, res) => {
   }
 });
 
-router.put("/order/:id", isAuthenticated, async (req, res) => {
+// Route pour mettre à jour le statut d'une commande (admin uniquement)
+router.put("/order/:id", isAuthenticated, isAdmin, async (req, res) => {
   try {
     const statusOrder = await Order.findByIdAndUpdate(
       req.params.id,
@@ -68,13 +69,14 @@ router.put("/order/:id", isAuthenticated, async (req, res) => {
     );
     res
       .status(200)
-      .json({ message: "Statue de commande modifier", statusOrder });
+      .json({ message: "Statut de commande modifié", statusOrder });
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
 });
 
-router.delete("/order/:id", isAuthenticated, async (req, res) => {
+// Route pour supprimer une commande (admin uniquement)
+router.delete("/order/:id", isAuthenticated, isAdmin, async (req, res) => {
   try {
     const deleteOrder = await Order.findByIdAndDelete(req.params.id);
 
