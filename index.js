@@ -18,7 +18,7 @@ app.use(orderRoutes);
 app.use(userRoutes);
 
 app.all("*", (req, res) => {
-  res.status(404).json({ message: "Not Found" });
+  res.status(404).json({ message: "vous etes sur la route app.all du Roi" });
 });
 
 app.listen(process.env.PORT, () => {
