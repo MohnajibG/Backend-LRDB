@@ -1,5 +1,4 @@
-const User = require("./models/User");
-
+const User = require("../models/User");
 const isAuthenticated = async (req, res, next) => {
   try {
     const token = req.headers.authorization.replace("Bearer ", "");
