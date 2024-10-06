@@ -48,10 +48,16 @@ router.post("/user/signup", async (req, res) => {
     // Sauvegarde de l'utilisateur
     await newUser.save();
 
-    // Réponse avec les informations de l'utilisateur
-    return res.status(201).json(newUser);
+    // Réponse avec les informations de l'utilisateur, excluant le hash et le salt
+    return res.status(201).json({
+      id: newUser._id, // ID de l'utilisateur
+      username: newUser.username,
+      email: newUser.email,
+      token: newUser.token,
+      isAdmin: newUser.isAdmin, // Inclure isAdmin si pertinent
+    });
   } catch (error) {
-    console.log(error);
+    console.error(error);
     return res.status(500).json({ message: error.message });
   }
 });
@@ -63,16 +69,21 @@ router.post("/user/login", async (req, res) => {
   try {
     const user = await User.findOne({ email });
 
-    if (!user || user.password !== password) {
+    // Vérification de l'existence de l'utilisateur et du mot de passe
+    if (
+      !user ||
+      user.hash !== SHA256(password + user.salt).toString(encBase64)
+    ) {
       return res.status(401).json({ message: "Identifiants incorrects" });
     }
 
-    // Assure-toi d'inclure `isAdmin` dans la réponse
+    // Réponse avec le token et isAdmin
     res.status(200).json({
       token: user.token, // Ou autre identifiant si tu utilises un token simple
       isAdmin: user.isAdmin, // Indiquer si c'est un admin ou pas
     });
   } catch (error) {
+    console.error(error);
     res.status(500).json({ message: error.message });
   }
 });

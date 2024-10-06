@@ -1,14 +1,14 @@
 const express = require("express");
-const Order = require("../models/Order");
-const isAuthenticated = require("../middleware/isAuthenticated");
-const isAdmin = require("../middleware/isAdmin");
+const Order = require("../models/Order"); // Importation du modèle de commande
+const isAuthenticated = require("../middleware/isAuthenticated"); // Middleware pour vérifier l'authentification
+const isAdmin = require("../middleware/isAdmin"); // Middleware pour vérifier les droits d'administration
 
 const router = express.Router();
 
 // Route pour créer une nouvelle commande
 router.post("/order", async (req, res) => {
   try {
-    const { items, totalPrice, etat } = req.body;
+    const { items, totalPrice, etat } = req.body; // Extraction des données de la requête
 
     // Récupérer la dernière commande pour déterminer le dernier numéro de commande
     const lastOrder = await Order.findOne().sort({ orderNumber: -1 });
@@ -16,77 +16,103 @@ router.post("/order", async (req, res) => {
     // Créer la nouvelle commande avec le numéro de commande incrémenté
     const newOrderNumber = lastOrder ? lastOrder.orderNumber + 1 : 1;
 
-    // Créer une nouvelle commande
+    // Créer une nouvelle commande avec les données fournies
     const newOrder = new Order({
-      orderNumber: newOrderNumber,
-      etat,
+      orderNumber: newOrderNumber, // Numéro de la commande
+      etat, // État de la commande
       items: items.map((item) => ({
-        name: item.name,
-        quantity: item.quantity,
-        price: item.price,
+        name: item.name, // Nom de l'article
+        quantity: item.quantity, // Quantité de l'article
+        price: item.price, // Prix de l'article
       })),
-      totalPrice,
+      totalPrice, // Prix total de la commande
     });
 
+    // Enregistrer la nouvelle commande dans la base de données
     await newOrder.save();
 
+    // Retourner une réponse indiquant que la commande a été enregistrée avec succès
     res.status(201).json({
       message: "Commande enregistrée 🫡",
-      orderNumber: newOrder.orderNumber,
-      id: newOrder.id,
+      orderNumber: newOrder.orderNumber, // Numéro de la commande enregistrée
+      id: newOrder.id, // ID de la commande enregistrée
     });
   } catch (error) {
-    res.status(500).json({ message: error.message });
+    // Gestion des erreurs
+    res.status(500).json({ message: error.message }); // Retourner une erreur 500 en cas de problème
   }
 });
 
+// Route pour obtenir une commande par son ID
 router.get("/order/:id", async (req, res) => {
   try {
-    const order = await Order.findById(req.params.id);
+    const order = await Order.findById(req.params.id); // Trouver la commande par son ID
 
-    res.status(200).json(order);
+    // Vérifier si la commande existe
+    if (!order) {
+      return res.status(404).json({ message: "Commande non trouvée" }); // Retourner une erreur 404 si non trouvée
+    }
+
+    res.status(200).json(order); // Retourner la commande trouvée
   } catch (error) {
-    res.status(500).json({ message: error.message });
+    // Gestion des erreurs
+    res.status(500).json({ message: error.message }); // Retourner une erreur 500 en cas de problème
   }
 });
 
 // Route pour obtenir toutes les commandes (admin uniquement)
 router.get("/orders", isAuthenticated, isAdmin, async (req, res) => {
   try {
-    const orders = await Order.find();
-    res.status(200).json(orders);
+    const orders = await Order.find(); // Récupérer toutes les commandes de la base de données
+    res.status(200).json(orders); // Retourner les commandes trouvées
   } catch (error) {
-    res.status(500).json({ message: error.message });
+    // Gestion des erreurs
+    res.status(500).json({ message: error.message }); // Retourner une erreur 500 en cas de problème
   }
 });
 
 // Route pour mettre à jour le statut d'une commande (admin uniquement)
 router.put("/order/:id", isAuthenticated, isAdmin, async (req, res) => {
   try {
+    // Mettre à jour l'état de la commande en fonction de l'ID fourni
     const statusOrder = await Order.findByIdAndUpdate(
       req.params.id,
-      { etat: true },
-      { new: true }
+      { etat: true }, // Changer l'état à true (peut être modifié selon la logique souhaitée)
+      { new: true } // Retourner la commande mise à jour
     );
+
+    // Vérifier si la commande existe
+    if (!statusOrder) {
+      return res.status(404).json({ message: "Commande non trouvée" }); // Retourner une erreur 404 si non trouvée
+    }
+
     res
       .status(200)
-      .json({ message: "Statut de commande modifié", statusOrder });
+      .json({ message: "Statut de commande modifié", statusOrder }); // Retourner la commande mise à jour
   } catch (error) {
-    res.status(500).json({ message: error.message });
+    // Gestion des erreurs
+    res.status(500).json({ message: error.message }); // Retourner une erreur 500 en cas de problème
   }
 });
 
 // Route pour supprimer une commande (admin uniquement)
 router.delete("/order/:id", isAuthenticated, isAdmin, async (req, res) => {
   try {
+    // Supprimer la commande par son ID
     const deleteOrder = await Order.findByIdAndDelete(req.params.id);
+
+    // Vérifier si la commande existe
+    if (!deleteOrder) {
+      return res.status(404).json({ message: "Commande non trouvée" }); // Retourner une erreur 404 si non trouvée
+    }
 
     res
       .status(200)
-      .json({ message: "Commande supprimée avec succès", deleteOrder });
+      .json({ message: "Commande supprimée avec succès", deleteOrder }); // Retourner une confirmation de suppression
   } catch (error) {
-    res.status(500).json({ message: error.message });
+    // Gestion des erreurs
+    res.status(500).json({ message: error.message }); // Retourner une erreur 500 en cas de problème
   }
 });
 
-module.exports = router;
+module.exports = router; // Exporter le routeur pour l'utiliser dans d'autres parties de l'application
