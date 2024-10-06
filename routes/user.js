@@ -4,6 +4,9 @@ const SHA256 = require("crypto-js/sha256");
 const encBase64 = require("crypto-js/enc-base64");
 const uid2 = require("uid2");
 
+const dotenv = require("dotenv");
+dotenv.config();
+
 const router = express.Router();
 
 // Route de signup
@@ -65,20 +68,31 @@ router.post("/user/login", async (req, res) => {
   const { email, password } = req.body;
 
   try {
+    // Vérifier si l'utilisateur existe
     const user = await User.findOne({ email });
-
-    if (!user || user.password !== password) {
+    if (!user) {
       return res.status(401).json({ message: "Identifiants incorrects" });
     }
 
-    // Assure-toi d'inclure `isAdmin` dans la réponse
-    console.log(isAdmin);
+    // Recréer le hash du mot de passe en combinant le mot de passe avec le salt de l'utilisateur
+    const hash = SHA256(password + user.salt).toString(encBase64);
+
+    // Vérifier si le hash recréé correspond au hash stocké
+    if (hash !== user.hash) {
+      return res.status(401).json({ message: "Identifiants incorrects" });
+    }
+
+    // Vérification si l'utilisateur est admin
+    const adminToken = process.env.ADMIN_TOKEN;
+    const isAdmin = user.token === adminToken;
+
+    // Réponse avec le token et l'information si l'utilisateur est admin
     return res.status(200).json({
-      token: user.token, // Ou autre identifiant si tu utilises un token simple
-      isAdmin: req.isAdmin, // Indiquer si c'est un admin ou pas
+      token: user.token,
+      isAdmin, // Renvoie true ou false
     });
   } catch (error) {
-    res.status(500).json({ message: error.message });
+    return res.status(500).json({ message: error.message });
   }
 });
 
