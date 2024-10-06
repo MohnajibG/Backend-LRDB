@@ -51,9 +51,9 @@ router.post("/user/signup", async (req, res) => {
     // Sauvegarde de l'utilisateur
     await newUser.save();
 
-    // Réponse avec les informations de l'utilisateur, excluant le hash et le salt
+    // Réponse avec les informations de l'utilisateur
     return res.status(201).json({
-      id: newUser._id, // ID de l'utilisateur
+      id: newUser._id,
       username: newUser.username,
       email: newUser.email,
       token: newUser.token,
@@ -75,15 +75,15 @@ router.post("/user/login", async (req, res) => {
       return res.status(401).json({ message: "Identifiants incorrects" });
     }
 
-    // Recréer le hash du mot de passe en combinant le mot de passe avec le salt de l'utilisateur
+    // Recréer le hash du mot de passe
     const hash = SHA256(password + user.salt).toString(encBase64);
 
-    // Vérifier si le hash recréé correspond au hash stocké
+    // Vérifier si le hash correspond
     if (hash !== user.hash) {
       return res.status(401).json({ message: "Identifiants incorrects" });
     }
 
-    // Réponse avec le token uniquement (aucune vérification admin ici)
+    // Réponse avec le token
     return res.status(200).json({
       token: user.token,
     });
@@ -91,4 +91,5 @@ router.post("/user/login", async (req, res) => {
     return res.status(500).json({ message: error.message });
   }
 });
+
 module.exports = router;

@@ -1,9 +1,9 @@
-// require("dotenv").config();
+require("dotenv").config();
 
 const isAdmin = (req, res, next) => {
   try {
-    // Ici on vérifie si le token de l'utilisateur correspond au token admin
-    if (req.user.token === "0mCQwHok-uMPVCUE") {
+    // Vérifie si le token de l'utilisateur correspond au token admin
+    if (req.user.token === process.env.ADMIN_TOKEN) {
       next(); // Si oui, on continue vers la route protégée
     } else {
       return res
@@ -11,7 +11,7 @@ const isAdmin = (req, res, next) => {
         .json({ message: "Unauthorized: Admin access only" });
     }
   } catch (error) {
-    res.status(500).json({ message: error.message });
+    res.status(500).json({ message: error.message }); // Erreur interne du serveur
   }
 };
 

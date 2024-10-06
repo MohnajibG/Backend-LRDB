@@ -2,23 +2,23 @@ const mongoose = require("mongoose");
 
 const OrderSchema = new mongoose.Schema({
   orderNumber: {
-    type: Number,
+    type: Number, // Numéro de la commande
   },
   etat: {
     type: Boolean,
-    default: false,
+    default: false, // Valeur par défaut
   },
   items: [
     {
-      name: { type: String },
-      quantity: { type: Number },
-      price: { type: Number },
+      name: { type: String }, // Nom de l'article
+      quantity: { type: Number }, // Quantité
+      price: { type: Number }, // Prix
     },
   ],
-  totalPrice: { type: Number },
+  totalPrice: { type: Number }, // Prix total
   createdAt: {
     type: Date,
-    default: Date.now,
+    default: Date.now, // Date de création
   },
 });
 

@@ -1,119 +1,95 @@
 const express = require("express");
-const Order = require("../models/Order"); // Importation du modèle de commande
-const isAuthenticated = require("../middleware/isAuthenticated"); // Middleware pour vérifier l'authentification
-const isAdmin = require("../middleware/isAdmin"); // Middleware pour vérifier les droits d'administration
+const User = require("../models/User");
+const SHA256 = require("crypto-js/sha256");
+const encBase64 = require("crypto-js/enc-base64");
+const uid2 = require("uid2");
+
+const dotenv = require("dotenv");
+dotenv.config();
 
 const router = express.Router();
 
-// Route pour créer une nouvelle commande
-router.post("/order", async (req, res) => {
+// Route de signup
+router.post("/user/signup", async (req, res) => {
   try {
-    const { items, totalPrice, etat } = req.body; // Extraction des données de la requête
+    const { username, email, password } = req.body;
 
-    // Récupérer la dernière commande pour déterminer le dernier numéro de commande
-    const lastOrder = await Order.findOne().sort({ orderNumber: -1 });
+    // Vérification des paramètres
+    if (!username || !email || !password) {
+      return res.status(400).json({ message: "Missing parameters" });
+    }
 
-    // Créer la nouvelle commande avec le numéro de commande incrémenté
-    const newOrderNumber = lastOrder ? lastOrder.orderNumber + 1 : 1;
+    // Vérification si l'email existe déjà
+    const userEmail = await User.findOne({ email });
+    if (userEmail) {
+      return res.status(409).json({ message: "Email already in database" });
+    }
 
-    // Créer une nouvelle commande avec les données fournies
-    const newOrder = new Order({
-      orderNumber: newOrderNumber, // Numéro de la commande
-      etat, // État de la commande
-      items: items.map((item) => ({
-        name: item.name, // Nom de l'article
-        quantity: item.quantity, // Quantité de l'article
-        price: item.price, // Prix de l'article
-      })),
-      totalPrice, // Prix total de la commande
+    // Vérification de la longueur du mot de passe
+    if (password.length < 8) {
+      return res
+        .status(400)
+        .json({ message: "Password must be at least 8 characters long" });
+    }
+
+    // Génération du salt et du hash
+    const salt = uid2(16);
+    const hash = SHA256(password + salt).toString(encBase64);
+
+    // Génération du token
+    const token = uid2(16);
+
+    // Création du nouvel utilisateur
+    const newUser = new User({
+      username,
+      email,
+      token,
+      hash,
+      salt,
     });
 
-    // Enregistrer la nouvelle commande dans la base de données
-    await newOrder.save();
+    // Sauvegarde de l'utilisateur
+    await newUser.save();
 
-    // Retourner une réponse indiquant que la commande a été enregistrée avec succès
-    res.status(201).json({
-      message: "Commande enregistrée 🫡",
-      orderNumber: newOrder.orderNumber, // Numéro de la commande enregistrée
-      id: newOrder.id, // ID de la commande enregistrée
+    // Réponse avec les informations de l'utilisateur, excluant le hash et le salt
+    return res.status(201).json({
+      id: newUser._id, // ID de l'utilisateur
+      username: newUser.username,
+      email: newUser.email,
+      token: newUser.token,
     });
   } catch (error) {
-    // Gestion des erreurs
-    res.status(500).json({ message: error.message }); // Retourner une erreur 500 en cas de problème
+    console.error(error);
+    return res.status(500).json({ message: error.message });
   }
 });
 
-// Route pour obtenir une commande par son ID
-router.get("/order/:id", async (req, res) => {
-  try {
-    const order = await Order.findById(req.params.id); // Trouver la commande par son ID
+// Route de login
+router.post("/user/login", async (req, res) => {
+  const { email, password } = req.body;
 
-    // Vérifier si la commande existe
-    if (!order) {
-      return res.status(404).json({ message: "Commande non trouvée" }); // Retourner une erreur 404 si non trouvée
+  try {
+    // Vérifier si l'utilisateur existe
+    const user = await User.findOne({ email });
+    if (!user) {
+      return res.status(401).json({ message: "Identifiants incorrects" });
     }
 
-    res.status(200).json(order); // Retourner la commande trouvée
-  } catch (error) {
-    // Gestion des erreurs
-    res.status(500).json({ message: error.message }); // Retourner une erreur 500 en cas de problème
-  }
-});
+    // Recréer le hash du mot de passe
+    const hash = SHA256(password + user.salt).toString(encBase64);
 
-router.get("/orders", isAuthenticated, isAdmin, async (req, res) => {
-  try {
-    // Récupère toutes les commandes dans la base de données
-    const orders = await Order.find();
-    // Renvoie les commandes en format JSON avec un code 200 (succès)
-    res.status(200).json(orders);
-  } catch (error) {
-    // En cas d'erreur, renvoie un message d'erreur avec un code 500 (erreur interne)
-    res.status(500).json({ message: error.message });
-  }
-});
-
-// Route pour mettre à jour le statut d'une commande (admin uniquement)
-router.put("/order/:id", isAuthenticated, isAdmin, async (req, res) => {
-  try {
-    // Mettre à jour l'état de la commande en fonction de l'ID fourni
-    const statusOrder = await Order.findByIdAndUpdate(
-      req.params.id,
-      { etat: true }, // Changer l'état à true (peut être modifié selon la logique souhaitée)
-      { new: true } // Retourner la commande mise à jour
-    );
-
-    // Vérifier si la commande existe
-    if (!statusOrder) {
-      return res.status(404).json({ message: "Commande non trouvée" }); // Retourner une erreur 404 si non trouvée
+    // Vérifier si le hash correspond au hash stocké
+    if (hash !== user.hash) {
+      return res.status(401).json({ message: "Identifiants incorrects" });
     }
 
-    res
-      .status(200)
-      .json({ message: "Statut de commande modifié", statusOrder }); // Retourner la commande mise à jour
+    // Réponse avec le token
+    return res.status(200).json({
+      token: user.token,
+    });
   } catch (error) {
-    // Gestion des erreurs
-    res.status(500).json({ message: error.message }); // Retourner une erreur 500 en cas de problème
+    return res.status(500).json({ message: error.message });
   }
 });
 
-// Route pour supprimer une commande (admin uniquement)
-router.delete("/order/:id", isAuthenticated, isAdmin, async (req, res) => {
-  try {
-    // Supprimer la commande par son ID
-    const deleteOrder = await Order.findByIdAndDelete(req.params.id);
-
-    // Vérifier si la commande existe
-    if (!deleteOrder) {
-      return res.status(404).json({ message: "Commande non trouvée" }); // Retourner une erreur 404 si non trouvée
-    }
-
-    res
-      .status(200)
-      .json({ message: "Commande supprimée avec succès", deleteOrder }); // Retourner une confirmation de suppression
-  } catch (error) {
-    // Gestion des erreurs
-    res.status(500).json({ message: error.message }); // Retourner une erreur 500 en cas de problème
-  }
-});
-
-module.exports = router; // Exporter le routeur pour l'utiliser dans d'autres parties de l'application
+module.exports = router;
