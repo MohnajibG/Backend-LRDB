@@ -1,3 +1,5 @@
+require("dotenv").config();
+
 const isAdmin = (req, res, next) => {
   try {
     // Ici on vérifie si le token de l'utilisateur correspond au token admin
@@ -12,3 +14,5 @@ const isAdmin = (req, res, next) => {
     res.status(500).json({ message: error.message });
   }
 };
+
+module.exports = isAdmin;
