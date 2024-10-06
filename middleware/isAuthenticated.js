@@ -10,6 +10,7 @@ const isAuthenticated = async (req, res, next) => {
   try {
     // Rechercher l'utilisateur dans la base de données par son token
     const user = await User.findOne({ token });
+    console.log("Utilisateur trouvé:", user); // Debug
     if (!user) {
       return res.status(401).json({ message: "Utilisateur non trouvé" });
     }
