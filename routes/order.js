@@ -1,94 +1,86 @@
 const express = require("express");
-const User = require("../models/User");
-const SHA256 = require("crypto-js/sha256");
-const encBase64 = require("crypto-js/enc-base64");
-const uid2 = require("uid2");
-
-const dotenv = require("dotenv");
-dotenv.config();
-
+const Order = require("../models/Order");
 const router = express.Router();
 
-// Route de signup
-router.post("/user/signup", async (req, res) => {
+// Route pour créer une nouvelle commande
+router.post("/order", async (req, res) => {
   try {
-    const { username, email, password } = req.body;
+    const { orderNumber, items, totalPrice } = req.body;
 
-    // Vérification des paramètres
-    if (!username || !email || !password) {
-      return res.status(400).json({ message: "Missing parameters" });
-    }
-
-    // Vérification si l'email existe déjà
-    const userEmail = await User.findOne({ email });
-    if (userEmail) {
-      return res.status(409).json({ message: "Email already in database" });
-    }
-
-    // Vérification de la longueur du mot de passe
-    if (password.length < 8) {
-      return res
-        .status(400)
-        .json({ message: "Password must be at least 8 characters long" });
-    }
-
-    // Génération du salt et du hash
-    const salt = uid2(16);
-    const hash = SHA256(password + salt).toString(encBase64);
-
-    // Génération du token
-    const token = uid2(16);
-
-    // Création du nouvel utilisateur
-    const newUser = new User({
-      username,
-      email,
-      token,
-      hash,
-      salt,
+    // Création d'une nouvelle commande
+    const newOrder = new Order({
+      orderNumber,
+      items,
+      totalPrice,
     });
 
-    // Sauvegarde de l'utilisateur
-    await newUser.save();
+    // Sauvegarde de la commande
+    await newOrder.save();
 
-    // Réponse avec les informations de l'utilisateur, excluant le hash et le salt
-    return res.status(201).json({
-      id: newUser._id, // ID de l'utilisateur
-      username: newUser.username,
-      email: newUser.email,
-      token: newUser.token,
-    });
+    return res.status(201).json(newOrder); // Retourne la commande créée
   } catch (error) {
-    console.error(error);
-    return res.status(500).json({ message: error.message });
+    return res.status(500).json({ message: error.message }); // Gestion des erreurs
   }
 });
 
-// Route de login
-router.post("/user/login", async (req, res) => {
-  const { email, password } = req.body;
-
+// Route pour obtenir toutes les commandes
+router.get("/order", async (req, res) => {
   try {
-    // Vérifier si l'utilisateur existe
-    const user = await User.findOne({ email });
-    if (!user) {
-      return res.status(401).json({ message: "Identifiants incorrects" });
-    }
-
-    // Recréer le hash du mot de passe
-    const hash = SHA256(password + user.salt).toString(encBase64);
-
-    // Vérifier si le hash correspond au hash stocké
-    if (hash !== user.hash) {
-      return res.status(401).json({ message: "Identifiants incorrects" });
-    }
-
-    // Réponse avec le token
-    return res.status(200).json({
-      token: user.token,
-    });
+    const orders = await Order.find(); // Récupération de toutes les commandes
+    return res.status(200).json(orders); // Retourne les commandes
   } catch (error) {
-    return res.status(500).json({ message: error.message });
+    return res.status(500).json({ message: error.message }); // Gestion des erreurs
+  }
+});
+
+// Route pour obtenir une commande par ID
+router.get("/order/:id", async (req, res) => {
+  try {
+    const order = await Order.findById(req.params.id); // Recherche de la commande par ID
+
+    if (!order) {
+      return res.status(404).json({ message: "Order not found" }); // Gestion de la commande non trouvée
+    }
+
+    return res.status(200).json(order); // Retourne la commande trouvée
+  } catch (error) {
+    return res.status(500).json({ message: error.message }); // Gestion des erreurs
+  }
+});
+
+// Route pour mettre à jour une commande
+router.put("/order/:id", async (req, res) => {
+  try {
+    const { items, totalPrice, etat } = req.body;
+
+    const updatedOrder = await Order.findByIdAndUpdate(
+      req.params.id,
+      { items, totalPrice, etat },
+      { new: true } // Retourne le document mis à jour
+    );
+
+    if (!updatedOrder) {
+      return res.status(404).json({ message: "Order not found" }); // Gestion de la commande non trouvée
+    }
+
+    return res.status(200).json(updatedOrder); // Retourne la commande mise à jour
+  } catch (error) {
+    return res.status(500).json({ message: error.message }); // Gestion des erreurs
+  }
+});
+
+// Route pour supprimer une commande
+router.delete("/order/:id", async (req, res) => {
+  try {
+    const deletedOrder = await Order.findByIdAndDelete(req.params.id); // Suppression de la commande
+
+    if (!deletedOrder) {
+      return res.status(404).json({ message: "Order not found" }); // Gestion de la commande non trouvée
+    }
+
+    return res.status(204).send(); // Retourne 204 No Content
+  } catch (error) {
+    return res.status(500).json({ message: error.message }); // Gestion des erreurs
   }
 });
 
