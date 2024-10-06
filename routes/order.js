@@ -52,8 +52,8 @@ router.get("/order/:id", async (req, res) => {
 
 router.get("/orders", isAuthenticated, isAdmin, async (req, res) => {
   try {
-    const orders = await Order.find();
-    res.status(200).json(orders);
+    const orders = await Order.find(); // Récupérer toutes les commandes
+    res.status(200).json(orders); // Renvoie les commandes
   } catch (error) {
     res.status(500).json({ message: error.message });
   }

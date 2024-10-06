@@ -58,31 +58,22 @@ router.post("/user/signup", async (req, res) => {
 
 // Route de login
 router.post("/user/login", async (req, res) => {
+  const { email, password } = req.body;
+
   try {
-    const { email, password } = req.body;
-
-    // Vérification des paramètres
-    if (!email || !password) {
-      return res.status(400).json({ message: "Missing parameters" });
-    }
-
-    // Recherche de l'utilisateur par email
     const user = await User.findOne({ email });
-    if (!user) {
-      return res.status(401).json({ message: "Unauthorized" });
+
+    if (!user || user.password !== password) {
+      return res.status(401).json({ message: "Identifiants incorrects" });
     }
 
-    // Validation du mot de passe
-    const hash = SHA256(password + user.salt).toString(encBase64);
-    if (hash !== user.hash) {
-      return res.status(401).json({ message: "Unauthorized" });
-    }
-
-    // Réponse avec le token et le nom d'utilisateur
-    return res.status(200).json({ token: user.token, username: user.username });
+    // Assure-toi d'inclure `isAdmin` dans la réponse
+    res.status(200).json({
+      token: user.token, // Ou autre identifiant si tu utilises un token simple
+      isAdmin: user.isAdmin, // Indiquer si c'est un admin ou pas
+    });
   } catch (error) {
-    console.log(error);
-    return res.status(500).json({ message: error.message });
+    res.status(500).json({ message: error.message });
   }
 });
 

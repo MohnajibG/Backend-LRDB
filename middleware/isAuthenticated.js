@@ -1,22 +1,23 @@
-const User = require("../models/User");
+const User = require("../models/User"); // Ton modèle User
+
 const isAuthenticated = async (req, res, next) => {
+  const token = req.headers.authorization?.split(" ")[1]; // Token envoyé depuis le frontend
+  if (!token) {
+    return res.status(401).json({ message: "Non autorisé" });
+  }
+
   try {
-    const token = req.headers.authorization.replace("Bearer ", "");
-
-    // Recherche de l'utilisateur avec le token
-    const user = await User.findOne({ token });
-
+    // Rechercher l'utilisateur dans la base de données par son token
+    const user = await User.findOne({ token }); // Si tu stockes un token simple
     if (!user) {
-      return res
-        .status(401)
-        .json({ message: "Accès non autorisé : Utilisateur non trouvé" });
+      return res.status(401).json({ message: "Utilisateur non trouvé" });
     }
 
-    // Ajouter l'utilisateur à la requête
+    // Attacher l'utilisateur à l'objet requête
     req.user = user;
     next();
   } catch (error) {
-    res.status(500).json({ message: error.message });
+    return res.status(500).json({ message: "Erreur interne du serveur" });
   }
 };
 
