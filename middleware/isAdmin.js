@@ -1,17 +1,14 @@
-const dotenv = require("dotenv");
-dotenv.config(); // Charger les variables d'environnement depuis le fichier .env
-
 const isAdmin = (req, res, next) => {
-  const adminToken = process.env.ADMIN_TOKEN; // Récupérer le token admin du fichier .env
-  const token = req.headers.authorization?.split(" ")[1]; // Récupérer le token de l'en-tête
-
-  if (token === adminToken) {
-    req.isAdmin = true; // Ajoute une propriété isAdmin à la requête
-    next(); // L'utilisateur est administrateur, passer à l'étape suivante
-  } else {
-    req.isAdmin = false; // Ajoute une propriété isAdmin à la requête
-    next(); // L'utilisateur n'est pas administrateur, passer à l'étape suivante
+  try {
+    // Ici on vérifie si le token de l'utilisateur correspond au token admin
+    if (req.user.token === process.env.ADMIN_TOKEN) {
+      next(); // Si oui, on continue vers la route protégée
+    } else {
+      return res
+        .status(401)
+        .json({ message: "Unauthorized: Admin access only" });
+    }
+  } catch (error) {
+    res.status(500).json({ message: error.message });
   }
 };
-
-module.exports = isAdmin;

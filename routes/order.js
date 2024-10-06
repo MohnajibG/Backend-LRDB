@@ -62,9 +62,12 @@ router.get("/order/:id", async (req, res) => {
 
 router.get("/orders", isAuthenticated, isAdmin, async (req, res) => {
   try {
+    // Récupère toutes les commandes dans la base de données
     const orders = await Order.find();
+    // Renvoie les commandes en format JSON avec un code 200 (succès)
     res.status(200).json(orders);
   } catch (error) {
+    // En cas d'erreur, renvoie un message d'erreur avec un code 500 (erreur interne)
     res.status(500).json({ message: error.message });
   }
 });

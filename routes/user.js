@@ -64,6 +64,7 @@ router.post("/user/signup", async (req, res) => {
   }
 });
 
+// Route de login
 router.post("/user/login", async (req, res) => {
   const { email, password } = req.body;
 
@@ -82,18 +83,12 @@ router.post("/user/login", async (req, res) => {
       return res.status(401).json({ message: "Identifiants incorrects" });
     }
 
-    // Vérification si l'utilisateur est admin
-    const adminToken = process.env.ADMIN_TOKEN;
-    const isAdmin = user.token === adminToken;
-
-    // Réponse avec le token et l'information si l'utilisateur est admin
+    // Réponse avec le token uniquement (aucune vérification admin ici)
     return res.status(200).json({
       token: user.token,
-      isAdmin, // Renvoie true ou false
     });
   } catch (error) {
     return res.status(500).json({ message: error.message });
   }
 });
-
 module.exports = router;

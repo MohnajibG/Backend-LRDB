@@ -1,25 +1,27 @@
-// middleware/isAuthenticated.js
-const User = require("../models/User"); // Ton modèle User
+const User = require("../Models/User");
 
 const isAuthenticated = async (req, res, next) => {
-  const token = req.headers.authorization?.split(" ")[1]; // Récupérer le token de l'en-tête
-  if (!token) {
-    return res.status(401).json({ message: "Non autorisé" });
-  }
-
   try {
-    // Rechercher l'utilisateur dans la base de données par son token
-    const user = await User.findOne({ token });
-    console.log("Utilisateur trouvé:", user); // Debug
-    if (!user) {
-      return res.status(401).json({ message: "Utilisateur non trouvé" });
-    }
+    // Vérifie si l'en-tête 'Authorization' est présent
+    if (req.headers.authorization) {
+      // Extraction du token depuis l'en-tête
+      const token = req.headers.authorization.replace("Bearer ", "");
 
-    // Attacher l'utilisateur à l'objet requête
-    req.user = user; // L'utilisateur est maintenant accessible dans req.user
-    next();
+      // Recherche de l'utilisateur correspondant au token
+      const user = await User.findOne({ token }).select("account _id");
+
+      if (user) {
+        // Ajoute l'utilisateur à l'objet `req` pour le middleware suivant
+        req.user = user;
+        next(); // Passe au middleware suivant
+      } else {
+        return res.status(401).json({ message: "Unauthorized" }); // Si l'utilisateur n'est pas trouvé
+      }
+    } else {
+      return res.status(401).json({ message: "Unauthorized" }); // Si l'en-tête 'Authorization' est absent
+    }
   } catch (error) {
-    return res.status(500).json({ message: "Erreur interne du serveur" });
+    res.status(500).json({ message: error.message }); // Erreur interne du serveur
   }
 };
 
