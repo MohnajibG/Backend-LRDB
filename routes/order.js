@@ -60,14 +60,12 @@ router.get("/order/:id", async (req, res) => {
   }
 });
 
-// Route pour obtenir toutes les commandes (admin uniquement)
 router.get("/orders", isAuthenticated, isAdmin, async (req, res) => {
   try {
-    const orders = await Order.find(); // Récupérer toutes les commandes de la base de données
-    res.status(200).json(orders); // Retourner les commandes trouvées
+    const orders = await Order.find();
+    res.status(200).json(orders);
   } catch (error) {
-    // Gestion des erreurs
-    res.status(500).json({ message: error.message }); // Retourner une erreur 500 en cas de problème
+    res.status(500).json({ message: error.message });
   }
 });
 

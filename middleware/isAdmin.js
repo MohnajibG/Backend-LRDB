@@ -1,14 +1,17 @@
+const dotenv = require("dotenv");
+dotenv.config(); // Charger les variables d'environnement depuis le fichier .env
+
 const isAdmin = (req, res, next) => {
-  // Vérifier si l'utilisateur est connecté et s'il a le statut d'administrateur
-  if (req.user && req.user.isAdmin) {
+  const adminToken = process.env.ADMIN_TOKEN; // Récupérer le token admin du fichier .env
+  const token = req.headers.authorization?.split(" ")[1]; // Récupérer le token de l'en-tête
+
+  if (token === adminToken) {
+    req.isAdmin = true; // Ajoute une propriété isAdmin à la requête
     next(); // L'utilisateur est administrateur, passer à l'étape suivante
   } else {
-    // Si ce n'est pas le cas, renvoyer une erreur d'accès refusé
-    return res
-      .status(403)
-      .json({ message: "Accès refusé : administrateur seulement" });
+    req.isAdmin = false; // Ajoute une propriété isAdmin à la requête
+    next(); // L'utilisateur n'est pas administrateur, passer à l'étape suivante
   }
 };
 
-// Exporter le middleware isAdmin pour l'utiliser dans d'autres fichiers
 module.exports = isAdmin;
