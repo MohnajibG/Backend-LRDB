@@ -1,14 +1,14 @@
 const User = require("../models/User"); // Ton modèle User
 
 const isAuthenticated = async (req, res, next) => {
-  const token = req.headers.authorization?.split(" ")[1]; // Token envoyé depuis le frontend
+  const token = req.headers.authorization?.split(" ")[1];
   if (!token) {
     return res.status(401).json({ message: "Non autorisé" });
   }
 
   try {
     // Rechercher l'utilisateur dans la base de données par son token
-    const user = await User.findOne({ token }); // Si tu stockes un token simple
+    const user = await User.findOne({ token });
     if (!user) {
       return res.status(401).json({ message: "Utilisateur non trouvé" });
     }
