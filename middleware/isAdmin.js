@@ -6,7 +6,7 @@ const isAdmin = (req, res, next) => {
     const adminToken = req.headers.authorization.replace("Bearer ", "");
 
     // Comparer le token avec celui dans .env
-    if (adminToken && adminToken === process.env.ADMIN_TOKEN) {
+    if (adminToken === process.env.ADMIN_TOKEN) {
       // Si le token est valide (autorisation réussie)
       next();
     } else {
