@@ -62,28 +62,22 @@ router.post("/user/signup", async (req, res) => {
   }
 });
 
-// Route de login
 router.post("/user/login", async (req, res) => {
   const { email, password } = req.body;
 
   try {
     const user = await User.findOne({ email });
 
-    // Vérification de l'existence de l'utilisateur et du mot de passe
-    if (
-      !user ||
-      user.hash !== SHA256(password + user.salt).toString(encBase64)
-    ) {
+    if (!user || user.password !== password) {
       return res.status(401).json({ message: "Identifiants incorrects" });
     }
 
-    // Réponse avec le token et isAdmin
+    // Assure-toi d'inclure `isAdmin` dans la réponse
     res.status(200).json({
       token: user.token, // Ou autre identifiant si tu utilises un token simple
-      isAdmin: user.isAdmin, // Indiquer si c'est un admin ou pas
+      isAdmin: req.isAdmin, // Indiquer si c'est un admin ou pas
     });
   } catch (error) {
-    console.error(error);
     res.status(500).json({ message: error.message });
   }
 });
