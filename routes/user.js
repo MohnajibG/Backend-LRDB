@@ -72,7 +72,7 @@ router.post("/user/login", async (req, res) => {
     // Vérifier si l'utilisateur existe
     const user = await User.findOne({ email });
     if (!user) {
-      return res.status(401).json({ message: "Identifiants incorrects" });
+      return res.status(401).json({ message: "Identifiant incorrecte" });
     }
 
     // Recréer le hash du mot de passe
@@ -80,7 +80,7 @@ router.post("/user/login", async (req, res) => {
 
     // Vérifier si le hash correspond
     if (hash !== user.hash) {
-      return res.status(401).json({ message: "Identifiants incorrects" });
+      return res.status(401).json({ message: "Mot De Passe incorrecte" });
     }
 
     // Réponse avec le token
