@@ -46,7 +46,9 @@ router.post("/order", async (req, res) => {
 // Route pour obtenir une commande par son ID
 router.get("/order/:id", async (req, res) => {
   try {
-    const order = await Order.findById(req.params.id); // Trouver la commande par son ID
+    const orderId = req.params.id;
+
+    const order = await Order.findById(orderId); // Trouver la commande par son ID
 
     // Vérifier si la commande existe
     if (!order) {
