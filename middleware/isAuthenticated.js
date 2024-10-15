@@ -8,7 +8,7 @@ const isAuthenticated = async (req, res, next) => {
       const token = req.headers.authorization.replace("Bearer ", "");
 
       // Recherche de l'utilisateur correspondant au token
-      const user = await User.findOne({ token }).select;
+      const user = await User.findOne({ token }).select();
 
       if (user) {
         req.user = user; // Ajoute l'utilisateur à l'objet `req`
