@@ -70,6 +70,7 @@ router.post("/user/login", async (req, res) => {
 
   try {
     // Vérifier si l'utilisateur existe
+    console.log(email);
     const user = await User.findOne({ email });
     if (!user) {
       return res.status(401).json({ message: "Identifiant incorrecte" });
