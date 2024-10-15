@@ -1,6 +1,6 @@
 const mongoose = require("mongoose");
 
-const OrderSchema = new mongoose.Schema({
+const Order = mongoose.model("Order", {
   orderNumber: {
     type: Number, // Numéro de la commande
   },
@@ -21,7 +21,5 @@ const OrderSchema = new mongoose.Schema({
     default: Date.now, // Date de création
   },
 });
-
-const Order = mongoose.model("Order", OrderSchema);
 
 module.exports = Order;
