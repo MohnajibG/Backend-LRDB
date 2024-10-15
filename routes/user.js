@@ -22,14 +22,14 @@ router.post("/user/signup", async (req, res) => {
     // Vérification si l'email existe déjà
     const userEmail = await User.findOne({ email });
     if (userEmail) {
-      return res.status(409).json({ message: "Email already in database" });
+      return res.status(409).json({ message: "Email deja enregitrer " });
     }
 
     // Vérification de la longueur du mot de passe
     if (password.length < 8) {
-      return res
-        .status(400)
-        .json({ message: "Password must be at least 8 characters long" });
+      return res.status(400).json({
+        message: "Votre mot de passe doit avoir au moins 8 caractères.",
+      });
     }
 
     // Génération du salt et du hash
@@ -69,11 +69,16 @@ router.post("/user/login", async (req, res) => {
   const { email, password } = req.body;
 
   try {
+    if (password.length < 8) {
+      return res.status(400).json({
+        message: "Votre mot de passe doit avoir au moins 8 caractères.",
+      });
+    }
     // Vérifier si l'utilisateur existe
     console.log(email);
     const user = await User.findOne({ email });
     if (!user) {
-      return res.status(401).json({ message: "Identifiant incorrecte" });
+      return res.status(401).json({ message: " Votre E-mail est incorrecte" });
     }
 
     // Recréer le hash du mot de passe
@@ -81,15 +86,18 @@ router.post("/user/login", async (req, res) => {
 
     // Vérifier si le hash correspond
     if (hash !== user.hash) {
-      return res.status(401).json({ message: "Mot De Passe incorrecte" });
+      return res
+        .status(401)
+        .json({ message: "Votre Mot De Passe est incorrecte" });
     }
+    console.log("Connexion réussie, envoi du token :", user.token);
 
     // Réponse avec le token
     return res.status(200).json({
       token: user.token,
     });
   } catch (error) {
-    return res.status(500).json({ message: error.message });
+    return res.status(500).json("Erreur lors de la connexion:", error);
   }
 });
 
