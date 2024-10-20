@@ -1,5 +1,5 @@
 const express = require("express");
-const Order = require("../models/Order"); // Importation du modèle de commande
+const Order = require("../models/Order");
 const isAuthenticated = require("../middleware/isAuthenticated"); // Middleware pour vérifier l'authentification
 const isAdmin = require("../middleware/isAdmin"); // Middleware pour vérifier les droits d'administration
 
@@ -8,13 +8,13 @@ const router = express.Router();
 // Route pour créer une nouvelle commande
 router.post("/order", async (req, res) => {
   try {
-    const { items, totalPrice, etat } = req.body; // Extraction des données de la requête
+    const { items, totalPrice, etat } = req.body;
 
     // Récupérer la dernière commande pour déterminer le dernier numéro de commande
     const lastOrder = await Order.findOne().sort({ orderNumber: -1 });
 
     // Créer la nouvelle commande avec le numéro de commande incrémenté
-    const newOrderNumber = lastOrder ? lastOrder.orderNumber + 1 : 1;
+    const newOrderNumber = lastOrder ? lastOrder.orderNumber + 001 : 001;
 
     // Créer une nouvelle commande avec les données fournies
     const newOrder = new Order({
