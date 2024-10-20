@@ -8,7 +8,7 @@ const isAdmin = (req, res, next) => {
     } else {
       return res.status(401).json({
         message: "Unauthorized: Accès réservé aux administrateurs uniquement",
-      }); // Erreur "Unauthorized" qui va permettre de rediriger les clients vers la page d'accueil après une authentification échouée
+      }); // Erreur "Unauthorized" qui va permettre de rediriger les clients vers la page d'accueil après une authentification
     }
   } catch (error) {
     res.status(500).json({ message: error.message });
