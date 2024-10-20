@@ -4,14 +4,14 @@ const isAuthenticated = async (req, res, next) => {
   try {
     // Vérifie si l'en-tête 'Authorization' est présent
     if (req.headers.authorization) {
-      // Extraction du token depuis l'en-tête
+      // Extraction du token depuis headers
       const token = req.headers.authorization.replace("Bearer ", "");
 
       // Recherche de l'utilisateur correspondant au token
       const user = await User.findOne({ token }).select();
 
       if (user) {
-        req.user = user; // Ajoute l'utilisateur à l'objet `req`
+        req.user = user;
         next(); // Passe au middleware suivant
       } else {
         return res.status(401).json({ message: "Unauthorized" }); // Utilisateur non trouvé
