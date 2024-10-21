@@ -93,6 +93,7 @@ router.post("/user/login", async (req, res) => {
     // Réponse avec le token
     return res.status(200).json({
       token: user.token,
+      username: user.username,
     });
   } catch (error) {
     return res.status(500).json("Erreur lors de la connexion:", error);
