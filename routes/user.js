@@ -16,19 +16,19 @@ router.post("/user/signup", async (req, res) => {
 
     // Vérification des paramètres
     if (!username || !email || !password) {
-      return res.status(400).json({ message: "Missing parameters" });
+      return res.status(400).json({ message: "Paramètres manquants" });
     }
 
     // Vérification si l'email existe déjà
     const userEmail = await User.findOne({ email });
     if (userEmail) {
-      return res.status(409).json({ message: "Email deja enregitrer " });
+      return res.status(409).json({ message: "Email déja enregitré" });
     }
 
     // Vérification de la longueur du mot de passe
     if (password.length < 8) {
       return res.status(400).json({
-        message: "Votre mot de passe doit avoir au moins 8 caractères.",
+        message: "Votre mot de passe doit avoir au moins 8 caractères",
       });
     }
 
